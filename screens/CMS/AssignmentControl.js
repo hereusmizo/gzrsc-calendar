@@ -33,7 +33,12 @@ const AssignmentControl = ({logout}) => {
   }, []);
 
   const fetchData = async () => {
-    const token = await AsyncStorage.getItem('admin-auth');
+    let token;
+    if (await AsyncStorage.getItem('admin-auth'))
+      token = await AsyncStorage.getItem('admin-auth');
+    else if (await AsyncStorage.getItem('teacher-auth'))
+      token = await AsyncStorage.getItem('teacher-auth');
+    else token = null;
     if (token) {
       try {
         const response = await api.get(`/api/malsawma/assignment`, {
@@ -58,7 +63,12 @@ const AssignmentControl = ({logout}) => {
         ToastAndroid.TOP,
       );
     }
-    const token = await AsyncStorage.getItem('admin-auth');
+    let token;
+    if (await AsyncStorage.getItem('admin-auth'))
+      token = await AsyncStorage.getItem('admin-auth');
+    else if (await AsyncStorage.getItem('teacher-auth'))
+      token = await AsyncStorage.getItem('teacher-auth');
+    else token = null;
 
     if (token) {
       try {
@@ -112,7 +122,12 @@ const AssignmentControl = ({logout}) => {
     }
   };
   const onDelete = async deleteId => {
-    const token = await AsyncStorage.getItem('admin-auth');
+    let token;
+    if (await AsyncStorage.getItem('admin-auth'))
+      token = await AsyncStorage.getItem('admin-auth');
+    else if (await AsyncStorage.getItem('teacher-auth'))
+      token = await AsyncStorage.getItem('teacher-auth');
+    else token = null;
 
     if (token) {
       try {

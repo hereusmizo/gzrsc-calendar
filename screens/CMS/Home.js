@@ -17,6 +17,21 @@ const Home = ({logout, navigation}) => {
       route: 'AssignmentControl',
     },
     {
+      id: 4,
+      name: 'Course Creation',
+      route: 'CourseCreation',
+    },
+    {
+      id: 5,
+      name: 'Student Creation',
+      route: 'StudentCreation',
+    },
+    {
+      id: 6,
+      name: 'Teacher Creation',
+      route: 'TeacherCreation',
+    },
+    {
       id: 3,
       name: 'Logout',
     },
@@ -54,7 +69,7 @@ const Home = ({logout, navigation}) => {
               backgroundColor:
                 item.id === 3 ? getColor.secondary : getColor.primary,
               borderRadius: 5,
-              padding: 20,
+              padding: 15,
             }}>
             <Text
               style={{

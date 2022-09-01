@@ -11,8 +11,6 @@ import {
   Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {Calendar} from 'react-native-calendars';
-import dayjs from 'dayjs';
 import getColor from '../../components/getColor';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout} from '../../actions';
@@ -22,50 +20,22 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import PrimaryActiveButtonStyle from '../../components/PrimaryActiveButtonStyle';
 import TextInputStyle from '../../components/TextInputStyle';
 
-const CalendarControl = ({logout}) => {
-  const [selectedDate, setSelectedDate] = useState(
-    dayjs(new Date()).format('YYYY-MM-DD'),
-  );
+const CourseCreation = ({logout}) => {
   const [id, setId] = useState(null);
   const [data, setData] = useState([]);
-  const [markedDates, setMarkedDates] = useState({});
   const [openFormDialog, setOpenFormDialog] = useState(false);
   const [formValues, setFormValues] = useState({
-    title: '',
-    body: '',
+    name: '',
   });
   useEffect(() => {
     fetchData();
   }, []);
-  useEffect(() => {
-    if (data.length) {
-      assignMarkDates();
-    }
-  }, [data.length]);
-  const assignMarkDates = () => {
-    let marked = {};
-    data.forEach(async item => {
-      marked = {
-        ...marked,
-        [dayjs(item.date).format('YYYY-MM-DD')]: {
-          selected: true,
-          selectedColor: getColor.success,
-        },
-      };
-    });
-    setMarkedDates(marked);
-  };
 
   const fetchData = async () => {
-    let token;
-    if (await AsyncStorage.getItem('admin-auth'))
-      token = await AsyncStorage.getItem('admin-auth');
-    else if (await AsyncStorage.getItem('teacher-auth'))
-      token = await AsyncStorage.getItem('teacher-auth');
-    else token = null;
+    const token = await AsyncStorage.getItem('admin-auth');
     if (token) {
       try {
-        const response = await api.get(`/api/malsawma/calendar`, {
+        const response = await api.get(`/api/malsawma/course`, {
           headers: {
             Authorization: 'Bearer ' + token,
           },
@@ -80,25 +50,20 @@ const CalendarControl = ({logout}) => {
   };
 
   const onSubmit = async () => {
-    if (!formValues.title) {
+    if (!formValues.name) {
       return ToastAndroid.showWithGravity(
-        'Cannot submit empty title event',
+        'Cannot submit empty course name',
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
     }
-    let token;
-    if (await AsyncStorage.getItem('admin-auth'))
-      token = await AsyncStorage.getItem('admin-auth');
-    else if (await AsyncStorage.getItem('teacher-auth'))
-      token = await AsyncStorage.getItem('teacher-auth');
-    else token = null;
+    const token = await AsyncStorage.getItem('admin-auth');
 
     if (token) {
       try {
         if (id) {
           await api.patch(
-            `/api/malsawma/calendar/${id}`,
+            `/api/malsawma/course/${id}`,
             {...formValues},
             {
               headers: {
@@ -109,8 +74,8 @@ const CalendarControl = ({logout}) => {
           setId(null);
         } else {
           await api.post(
-            `/api/malsawma/calendar`,
-            {...formValues, date: dayjs(selectedDate).format('YYYY-MM-DD')},
+            `/api/malsawma/course`,
+            {...formValues},
             {
               headers: {
                 Authorization: 'Bearer ' + token,
@@ -120,7 +85,7 @@ const CalendarControl = ({logout}) => {
         }
         fetchData();
         setOpenFormDialog(false);
-        setFormValues({title: '', body: ''});
+        setFormValues({name: ''});
         return ToastAndroid.showWithGravity(
           'Submitted Successfully',
           ToastAndroid.LONG,
@@ -146,16 +111,11 @@ const CalendarControl = ({logout}) => {
     }
   };
   const onDelete = async deleteId => {
-    let token;
-    if (await AsyncStorage.getItem('admin-auth'))
-      token = await AsyncStorage.getItem('admin-auth');
-    else if (await AsyncStorage.getItem('teacher-auth'))
-      token = await AsyncStorage.getItem('teacher-auth');
-    else token = null;
+    const token = await AsyncStorage.getItem('admin-auth');
 
     if (token) {
       try {
-        await api.delete(`/api/malsawma/calendar/${deleteId}`, {
+        await api.delete(`/api/malsawma/course/${deleteId}`, {
           headers: {
             Authorization: 'Bearer ' + token,
           },
@@ -189,55 +149,50 @@ const CalendarControl = ({logout}) => {
   };
 
   const renderData = () => {
-    const selectedMonth = dayjs(selectedDate).format('MM');
     if (data.length) {
-      return data
-        .filter(item => dayjs(item.date).format('MM') === selectedMonth)
-        .map(item => {
-          return (
-            <TouchableOpacity
-              onLongPress={() => {
-                Alert.alert(item.title, item.body, [
-                  {
-                    text: 'Delete',
-                    onPress: () => {
-                      onDelete(item.id);
-                    },
+      return data.map((item, index) => {
+        return (
+          <TouchableOpacity
+            onLongPress={() => {
+              Alert.alert('Course', item.name, [
+                {
+                  text: 'Delete',
+                  onPress: () => {
+                    onDelete(item.id);
                   },
-                  {
-                    text: 'Edit',
-                    onPress: () => {
-                      setId(item.id);
-                      setFormValues(item);
-                      setOpenFormDialog(true);
-                    },
+                },
+                {
+                  text: 'Edit',
+                  onPress: () => {
+                    setId(item.id);
+                    setFormValues(item);
+                    setOpenFormDialog(true);
                   },
-                  {
-                    text: 'Close',
-                    style: 'cancel',
-                  },
-                ]);
-              }}
-              key={item.id}
-              style={{
-                flex: 1,
-                padding: 8,
-                marginVertical: 5,
-                marginHorizontal: 8,
-                backgroundColor: 'white',
-                borderColor: '#ddd',
-                borderWidth: 0.5,
-                elevation: 2,
-                borderRadius: 8,
-              }}>
-              <Text style={{fontWeight: '500'}}>
-                Date: {dayjs(item.date).format('DD MMMM YYYY')}
-              </Text>
-              <Text style={{fontWeight: '500'}}>{item.title}</Text>
-              <Text style={{marginTop: 5}}>{item.body}</Text>
-            </TouchableOpacity>
-          );
-        });
+                },
+                {
+                  text: 'Close',
+                  style: 'cancel',
+                },
+              ]);
+            }}
+            key={item.id}
+            style={{
+              flex: 1,
+              padding: 12,
+              marginVertical: 5,
+              marginHorizontal: 8,
+              backgroundColor: 'white',
+              borderColor: '#ddd',
+              borderWidth: 0.5,
+              elevation: 2,
+              borderRadius: 8,
+            }}>
+            <Text style={{fontWeight: '500'}}>
+              {index + 1}) {item.name}
+            </Text>
+          </TouchableOpacity>
+        );
+      });
     }
   };
 
@@ -251,8 +206,7 @@ const CalendarControl = ({logout}) => {
             setId(null);
             setOpenFormDialog(false);
             setFormValues({
-              title: '',
-              body: '',
+              name: '',
             });
           }}>
           <View
@@ -272,7 +226,7 @@ const CalendarControl = ({logout}) => {
                   fontWeight: '700',
                   marginLeft: 10,
                 }}>
-                New Calendar Event
+                Course Creation
               </Text>
             </View>
             <View
@@ -287,8 +241,7 @@ const CalendarControl = ({logout}) => {
                   setId(null);
                   setOpenFormDialog(false);
                   setFormValues({
-                    title: '',
-                    body: '',
+                    name: '',
                   });
                 }}>
                 <AntDesign name="closecircleo" size={25} />
@@ -312,53 +265,20 @@ const CalendarControl = ({logout}) => {
             <Text
               style={{
                 color: 'black',
-                fontSize: 16,
-                textAlign: 'center',
-                fontWeight: '500',
-
-                marginHorizontal: 10,
-              }}>
-              Date: {dayjs(selectedDate).format('DD MMMM YYYY')}
-            </Text>
-            <Text
-              style={{
-                color: 'black',
                 fontSize: 12,
                 marginTop: 5,
                 marginHorizontal: 10,
               }}>
-              Title of Event *
+              Name of Course *
             </Text>
             <TextInput
-              placeholder="Title of Event"
+              placeholder="Name of Course"
               style={{...TextInputStyle, textAlignVertical: 'top'}}
-              value={formValues.title}
+              value={formValues.name}
               onChangeText={value => {
                 setFormValues({
                   ...formValues,
-                  title: value,
-                });
-              }}
-            />
-            <Text
-              style={{
-                color: 'black',
-                fontSize: 12,
-                marginTop: 5,
-                marginHorizontal: 10,
-              }}>
-              Description of event
-            </Text>
-            <TextInput
-              multiline
-              numberOfLines={10}
-              placeholder="Description of event..."
-              style={{...TextInputStyle, textAlignVertical: 'top'}}
-              value={formValues.body}
-              onChangeText={value => {
-                setFormValues({
-                  ...formValues,
-                  body: value,
+                  name: value,
                 });
               }}
             />
@@ -386,51 +306,12 @@ const CalendarControl = ({logout}) => {
   };
   return (
     <View style={{backgroundColor: '#fff', height: '100%'}}>
-      <Calendar
-        style={{marginTop: -10}}
-        theme={{
-          todayTextColor: '#fff',
-          todayBackgroundColor: getColor.primary,
-          arrowColor: 'black',
-          textMonthFontWeight: 'bold',
-          'stylesheet.calendar.header': {
-            week: {
-              marginTop: 0,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            },
-          },
-        }}
-        markedDates={{
-          [selectedDate]: {
-            selected: true,
-            marked: true,
-            selectedColor: getColor.secondary,
-            dotColor: getColor.secondary,
-          },
-          ...markedDates,
-        }}
-        current={selectedDate}
-        onMonthChange={e => setSelectedDate(e.dateString)}
-        onDayPress={e => {
-          setSelectedDate(e.dateString);
-        }}
-        monthFormat={'MMMM, yyyy'}
-        disableAllTouchEventsForDisabledDays={true}
-      />
-      <View
-        style={{
-          borderBottomColor: '#ddd',
-          borderBottomWidth: 1,
-          marginBottom: 10,
-        }}
-      />
       <TouchableHighlight
         underlayColor={getColor.primaryUnderlay}
         onPress={() => {
           setOpenFormDialog(true);
         }}
-        style={PrimaryActiveButtonStyle}>
+        style={{...PrimaryActiveButtonStyle, marginTop: 10}}>
         <View>
           <Text
             style={{
@@ -439,7 +320,7 @@ const CalendarControl = ({logout}) => {
               fontWeight: '600',
               fontSize: 14,
             }}>
-            Add Event
+            Add New Course
           </Text>
         </View>
       </TouchableHighlight>
@@ -449,4 +330,4 @@ const CalendarControl = ({logout}) => {
   );
 };
 
-export default connect(null, {logout})(CalendarControl);
+export default connect(null, {logout})(CourseCreation);

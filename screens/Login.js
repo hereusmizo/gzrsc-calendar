@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {checkAuth} from '../actions';
 import HideKeyboard from '../components/HideKeyboard';
 import getColor from '../components/getColor';
+import {Picker} from '@react-native-picker/picker';
 import TextInputStyle from '../components/TextInputStyle';
 import PrimaryActiveButtonStyle from '../components/PrimaryActiveButtonStyle';
 import PrimaryInactiveButtonStyle from '../components/PrimaryInactiveButtonStyle';
@@ -22,6 +23,7 @@ import api from '../api/api';
 
 const Login = ({checkAuth}) => {
   const ref1 = useRef();
+  const [selectUser, setSelectUser] = useState('Student');
   const [isWait, setIsWait] = useState(false);
   const [formValues, setFormValues] = useState({
     username: '',
@@ -32,8 +34,24 @@ const Login = ({checkAuth}) => {
     if (formValues.username && formValues.password) {
       try {
         setIsWait(true);
-        const response = await api.post(`/api/malsawma/login`, formValues);
-        await AsyncStorage.setItem('admin-auth', response.data.token);
+        if (selectUser === 'Student') {
+          const response = await api.post(`/api/malsawma/login/student`, {
+            ...formValues,
+            rollno: formValues.username,
+          });
+          await AsyncStorage.setItem('student-auth', response.data.token);
+        } else if (selectUser === 'Teacher') {
+          const response = await api.post(`/api/malsawma/login/teacher`, {
+            ...formValues,
+            email: formValues.username,
+          });
+          await AsyncStorage.setItem('teacher-auth', response.data.token);
+        } else {
+          const response = await api.post(`/api/malsawma/login/user`, {
+            ...formValues,
+          });
+          await AsyncStorage.setItem('admin-auth', response.data.token);
+        }
         setFormValues({username: '', password: ''});
         setIsWait(false);
         ToastAndroid.showWithGravity(
@@ -41,7 +59,7 @@ const Login = ({checkAuth}) => {
           ToastAndroid.SHORT,
           ToastAndroid.TOP,
         );
-        return checkAuth();
+        setTimeout(() => checkAuth(), 300);
       } catch (error) {
         setIsWait(false);
         if (error.response) {
@@ -84,6 +102,15 @@ const Login = ({checkAuth}) => {
             style={{height: 130, width: 130, marginTop: 40}}
           />
         </View>
+        <Text
+          style={{
+            textAlign: 'center',
+            marginTop: 10,
+            fontWeight: 'bold',
+            fontSize: 18,
+          }}>
+          GZRSC Calendar
+        </Text>
         <View
           style={{
             borderWidth: 0.8,
@@ -103,7 +130,6 @@ const Login = ({checkAuth}) => {
             }}>
             Sign In
           </Text>
-
           <Text
             style={{
               color: 'black',
@@ -111,11 +137,41 @@ const Login = ({checkAuth}) => {
               marginTop: 5,
               marginHorizontal: 10,
             }}>
-            Username
+            Select User Type
+          </Text>
+          <View style={{...TextInputStyle, padding: 0, height: 44}}>
+            <Picker
+              mode="dropdown"
+              style={{marginTop: -5}}
+              selectedValue={selectUser}
+              onValueChange={value => setSelectUser(value)}>
+              <Picker.Item label="Student" value={'Student'} />
+              <Picker.Item label="Teacher" value={'Teacher'} />
+              <Picker.Item label="Admin" value={'Admin'} />
+            </Picker>
+          </View>
+          <Text
+            style={{
+              color: 'black',
+              fontSize: 12,
+              marginTop: 5,
+              marginHorizontal: 10,
+            }}>
+            {selectUser === 'Admin'
+              ? 'Username'
+              : selectUser === 'Teacher'
+              ? 'Email ID'
+              : 'Roll Number'}
           </Text>
           <TextInput
             style={TextInputStyle}
-            placeholder="Username"
+            placeholder={
+              selectUser === 'Admin'
+                ? 'Username'
+                : selectUser === 'Teacher'
+                ? 'Email ID'
+                : 'Roll Number'
+            }
             value={formValues.username}
             onChangeText={value =>
               setFormValues({...formValues, username: value})

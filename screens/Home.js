@@ -1,4 +1,4 @@
-import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
+import {View, Text, ScrollView, TouchableOpacity, Alert} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {Calendar} from 'react-native-calendars';
 import dayjs from 'dayjs';
@@ -51,10 +51,13 @@ const Home = () => {
         .map(item => {
           return (
             <TouchableOpacity
+              onPress={() => {
+                Alert.alert(item.title, item.body);
+              }}
               key={item.id}
               style={{
                 flex: 1,
-                padding: 8,
+                padding: 10,
                 marginVertical: 5,
                 marginHorizontal: 8,
                 backgroundColor: 'white',
@@ -62,12 +65,34 @@ const Home = () => {
                 borderWidth: 0.5,
                 elevation: 2,
                 borderRadius: 8,
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
               }}>
-              <Text style={{fontWeight: '500'}}>
-                Date: {dayjs(item.date).format('DD MMMM YYYY')}
-              </Text>
-              <Text style={{fontWeight: '500'}}>{item.title}</Text>
-              <Text style={{marginTop: 5}}>{item.body}</Text>
+              <View style={{flexShrink: 1}}>
+                <Text
+                  style={{
+                    fontWeight: '600',
+                    fontSize: 20,
+                    color: getColor.primary,
+                  }}>
+                  {dayjs(item.date).format('DD')}
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: '600',
+                    fontSize: 11,
+                    textTransform: 'uppercase',
+                    color: getColor.primary,
+                  }}>
+                  {dayjs(item.date).format('ddd')}
+                </Text>
+              </View>
+              <View style={{flexGrow: 1, marginLeft: 15}}>
+                <Text style={{fontWeight: '500', fontSize: 16}}>
+                  {item.title}
+                </Text>
+              </View>
             </TouchableOpacity>
           );
         });
@@ -80,7 +105,7 @@ const Home = () => {
         style={{marginTop: -10}}
         theme={{
           todayTextColor: '#fff',
-          todayBackgroundColor: getColor.primary,
+          todayDotColor: getColor.primary,
           arrowColor: 'black',
           textMonthFontWeight: 'bold',
           'stylesheet.calendar.header': {

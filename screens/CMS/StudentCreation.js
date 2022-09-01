@@ -11,8 +11,6 @@ import {
   Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {Calendar} from 'react-native-calendars';
-import dayjs from 'dayjs';
 import getColor from '../../components/getColor';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout} from '../../actions';
@@ -21,55 +19,37 @@ import api from '../../api/api';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import PrimaryActiveButtonStyle from '../../components/PrimaryActiveButtonStyle';
 import TextInputStyle from '../../components/TextInputStyle';
+import {Picker} from '@react-native-picker/picker';
 
-const CalendarControl = ({logout}) => {
-  const [selectedDate, setSelectedDate] = useState(
-    dayjs(new Date()).format('YYYY-MM-DD'),
-  );
+const StudentCreation = ({logout, course}) => {
   const [id, setId] = useState(null);
+  const [selectCourse, setSelectCourse] = useState(null);
   const [data, setData] = useState([]);
-  const [markedDates, setMarkedDates] = useState({});
   const [openFormDialog, setOpenFormDialog] = useState(false);
   const [formValues, setFormValues] = useState({
-    title: '',
-    body: '',
+    name: '',
+    rollno: '',
+    course: '',
+    password: '',
+    confirm: '',
   });
   useEffect(() => {
-    fetchData();
-  }, []);
-  useEffect(() => {
-    if (data.length) {
-      assignMarkDates();
-    }
-  }, [data.length]);
-  const assignMarkDates = () => {
-    let marked = {};
-    data.forEach(async item => {
-      marked = {
-        ...marked,
-        [dayjs(item.date).format('YYYY-MM-DD')]: {
-          selected: true,
-          selectedColor: getColor.success,
-        },
-      };
-    });
-    setMarkedDates(marked);
-  };
+    if (selectCourse) fetchData();
+    else setData([]);
+  }, [selectCourse]);
 
   const fetchData = async () => {
-    let token;
-    if (await AsyncStorage.getItem('admin-auth'))
-      token = await AsyncStorage.getItem('admin-auth');
-    else if (await AsyncStorage.getItem('teacher-auth'))
-      token = await AsyncStorage.getItem('teacher-auth');
-    else token = null;
+    const token = await AsyncStorage.getItem('admin-auth');
     if (token) {
       try {
-        const response = await api.get(`/api/malsawma/calendar`, {
-          headers: {
-            Authorization: 'Bearer ' + token,
+        const response = await api.get(
+          `/api/malsawma/student/${selectCourse}`,
+          {
+            headers: {
+              Authorization: 'Bearer ' + token,
+            },
           },
-        });
+        );
         setData(response.data.data);
       } catch (error) {
         setData([]);
@@ -80,25 +60,33 @@ const CalendarControl = ({logout}) => {
   };
 
   const onSubmit = async () => {
-    if (!formValues.title) {
+    if (
+      !formValues.name ||
+      !formValues.rollno ||
+      !formValues.course ||
+      !formValues.password ||
+      !formValues.confirm
+    ) {
       return ToastAndroid.showWithGravity(
-        'Cannot submit empty title event',
+        'Please fill up all the required fields!',
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
     }
-    let token;
-    if (await AsyncStorage.getItem('admin-auth'))
-      token = await AsyncStorage.getItem('admin-auth');
-    else if (await AsyncStorage.getItem('teacher-auth'))
-      token = await AsyncStorage.getItem('teacher-auth');
-    else token = null;
+    if (formValues.password !== formValues.confirm) {
+      return ToastAndroid.showWithGravity(
+        'Password must be exactly same! Please try again!',
+        ToastAndroid.LONG,
+        ToastAndroid.TOP,
+      );
+    }
+    const token = await AsyncStorage.getItem('admin-auth');
 
     if (token) {
       try {
         if (id) {
           await api.patch(
-            `/api/malsawma/calendar/${id}`,
+            `/api/malsawma/student/${id}`,
             {...formValues},
             {
               headers: {
@@ -109,8 +97,8 @@ const CalendarControl = ({logout}) => {
           setId(null);
         } else {
           await api.post(
-            `/api/malsawma/calendar`,
-            {...formValues, date: dayjs(selectedDate).format('YYYY-MM-DD')},
+            `/api/malsawma/student`,
+            {...formValues},
             {
               headers: {
                 Authorization: 'Bearer ' + token,
@@ -120,7 +108,13 @@ const CalendarControl = ({logout}) => {
         }
         fetchData();
         setOpenFormDialog(false);
-        setFormValues({title: '', body: ''});
+        setFormValues({
+          name: '',
+          rollno: '',
+          course: '',
+          password: '',
+          confirm: '',
+        });
         return ToastAndroid.showWithGravity(
           'Submitted Successfully',
           ToastAndroid.LONG,
@@ -129,7 +123,7 @@ const CalendarControl = ({logout}) => {
       } catch (error) {
         if (error.response) {
           return ToastAndroid.showWithGravity(
-            'Sorry something went wrong! Please try again!',
+            'Email Address already exists! Try another email.',
             ToastAndroid.LONG,
             ToastAndroid.TOP,
           );
@@ -146,16 +140,11 @@ const CalendarControl = ({logout}) => {
     }
   };
   const onDelete = async deleteId => {
-    let token;
-    if (await AsyncStorage.getItem('admin-auth'))
-      token = await AsyncStorage.getItem('admin-auth');
-    else if (await AsyncStorage.getItem('teacher-auth'))
-      token = await AsyncStorage.getItem('teacher-auth');
-    else token = null;
+    const token = await AsyncStorage.getItem('admin-auth');
 
     if (token) {
       try {
-        await api.delete(`/api/malsawma/calendar/${deleteId}`, {
+        await api.delete(`/api/malsawma/student/${deleteId}`, {
           headers: {
             Authorization: 'Bearer ' + token,
           },
@@ -189,58 +178,60 @@ const CalendarControl = ({logout}) => {
   };
 
   const renderData = () => {
-    const selectedMonth = dayjs(selectedDate).format('MM');
     if (data.length) {
-      return data
-        .filter(item => dayjs(item.date).format('MM') === selectedMonth)
-        .map(item => {
-          return (
-            <TouchableOpacity
-              onLongPress={() => {
-                Alert.alert(item.title, item.body, [
-                  {
-                    text: 'Delete',
-                    onPress: () => {
-                      onDelete(item.id);
-                    },
+      return data.map((item, index) => {
+        return (
+          <TouchableOpacity
+            onLongPress={() => {
+              Alert.alert(item.rollno, item.name, [
+                {
+                  text: 'Delete',
+                  onPress: () => {
+                    onDelete(item.id);
                   },
-                  {
-                    text: 'Edit',
-                    onPress: () => {
-                      setId(item.id);
-                      setFormValues(item);
-                      setOpenFormDialog(true);
-                    },
+                },
+                {
+                  text: 'Edit',
+                  onPress: () => {
+                    setId(item.id);
+                    setFormValues(item);
+                    setOpenFormDialog(true);
                   },
-                  {
-                    text: 'Close',
-                    style: 'cancel',
-                  },
-                ]);
-              }}
-              key={item.id}
-              style={{
-                flex: 1,
-                padding: 8,
-                marginVertical: 5,
-                marginHorizontal: 8,
-                backgroundColor: 'white',
-                borderColor: '#ddd',
-                borderWidth: 0.5,
-                elevation: 2,
-                borderRadius: 8,
-              }}>
-              <Text style={{fontWeight: '500'}}>
-                Date: {dayjs(item.date).format('DD MMMM YYYY')}
-              </Text>
-              <Text style={{fontWeight: '500'}}>{item.title}</Text>
-              <Text style={{marginTop: 5}}>{item.body}</Text>
-            </TouchableOpacity>
-          );
-        });
+                },
+                {
+                  text: 'Close',
+                  style: 'cancel',
+                },
+              ]);
+            }}
+            key={item.id}
+            style={{
+              flex: 1,
+              padding: 8,
+              marginVertical: 5,
+              marginHorizontal: 8,
+              backgroundColor: 'white',
+              borderColor: '#ddd',
+              borderWidth: 0.5,
+              elevation: 2,
+              borderRadius: 8,
+            }}>
+            <Text style={{fontWeight: '500'}}>
+              {index + 1}) {item.rollno}
+            </Text>
+            <Text style={{marginTop: 5}}>{item.name}</Text>
+          </TouchableOpacity>
+        );
+      });
     }
   };
-
+  const renderCourse = () => {
+    if (course.length) {
+      return course.map(item => (
+        <Picker.Item label={item.name} key={item.id} value={item.id} />
+      ));
+    }
+  };
   const renderFormDialog = () => {
     if (openFormDialog) {
       return (
@@ -251,8 +242,11 @@ const CalendarControl = ({logout}) => {
             setId(null);
             setOpenFormDialog(false);
             setFormValues({
-              title: '',
-              body: '',
+              name: '',
+              rollno: '',
+              course: '',
+              password: '',
+              confirm: '',
             });
           }}>
           <View
@@ -272,7 +266,7 @@ const CalendarControl = ({logout}) => {
                   fontWeight: '700',
                   marginLeft: 10,
                 }}>
-                New Calendar Event
+                Student Creation
               </Text>
             </View>
             <View
@@ -287,8 +281,11 @@ const CalendarControl = ({logout}) => {
                   setId(null);
                   setOpenFormDialog(false);
                   setFormValues({
-                    title: '',
-                    body: '',
+                    name: '',
+                    rollno: '',
+                    course: '',
+                    password: '',
+                    confirm: '',
                   });
                 }}>
                 <AntDesign name="closecircleo" size={25} />
@@ -312,31 +309,20 @@ const CalendarControl = ({logout}) => {
             <Text
               style={{
                 color: 'black',
-                fontSize: 16,
-                textAlign: 'center',
-                fontWeight: '500',
-
-                marginHorizontal: 10,
-              }}>
-              Date: {dayjs(selectedDate).format('DD MMMM YYYY')}
-            </Text>
-            <Text
-              style={{
-                color: 'black',
                 fontSize: 12,
                 marginTop: 5,
                 marginHorizontal: 10,
               }}>
-              Title of Event *
+              Name of Student *
             </Text>
             <TextInput
-              placeholder="Title of Event"
+              placeholder="Name of Student"
               style={{...TextInputStyle, textAlignVertical: 'top'}}
-              value={formValues.title}
+              value={formValues.name}
               onChangeText={value => {
                 setFormValues({
                   ...formValues,
-                  title: value,
+                  name: value,
                 });
               }}
             />
@@ -347,18 +333,79 @@ const CalendarControl = ({logout}) => {
                 marginTop: 5,
                 marginHorizontal: 10,
               }}>
-              Description of event
+              Roll Number *
             </Text>
             <TextInput
-              multiline
-              numberOfLines={10}
-              placeholder="Description of event..."
+              placeholder="Roll Number"
               style={{...TextInputStyle, textAlignVertical: 'top'}}
-              value={formValues.body}
+              value={formValues.rollno}
               onChangeText={value => {
                 setFormValues({
                   ...formValues,
-                  body: value,
+                  rollno: value,
+                });
+              }}
+            />
+            <Text
+              style={{
+                color: 'black',
+                fontSize: 12,
+                marginTop: 5,
+                marginHorizontal: 10,
+              }}>
+              Select Course *
+            </Text>
+            <View style={{...TextInputStyle, padding: 0, height: 44}}>
+              <Picker
+                mode="dropdown"
+                style={{marginTop: -5}}
+                selectedValue={formValues.course}
+                onValueChange={value =>
+                  setFormValues({...formValues, course: value})
+                }>
+                <Picker.Item label="-" value={null || ''} />
+                {renderCourse()}
+              </Picker>
+            </View>
+            <Text
+              style={{
+                color: 'black',
+                fontSize: 12,
+                marginTop: 5,
+                marginHorizontal: 10,
+              }}>
+              Password *
+            </Text>
+            <TextInput
+              placeholder="Password"
+              secureTextEntry
+              //   keyboardType="visible-password"
+              style={{...TextInputStyle, textAlignVertical: 'top'}}
+              value={formValues.password}
+              onChangeText={value => {
+                setFormValues({
+                  ...formValues,
+                  password: value,
+                });
+              }}
+            />
+            <Text
+              style={{
+                color: 'black',
+                fontSize: 12,
+                marginTop: 5,
+                marginHorizontal: 10,
+              }}>
+              Retype Password *
+            </Text>
+            <TextInput
+              placeholder="Retype Password"
+              style={{...TextInputStyle, textAlignVertical: 'top'}}
+              value={formValues.confirm}
+              onChangeText={value => {
+                setFormValues({
+                  ...formValues,
+                  confirm: value,
                 });
               }}
             />
@@ -367,9 +414,10 @@ const CalendarControl = ({logout}) => {
             onPress={onSubmit}
             style={{
               ...PrimaryActiveButtonStyle,
-              marginTop: 20,
-              marginBottom: 50,
-              marginHorizontal: 10,
+              position: 'absolute',
+              bottom: 20,
+              left: 20,
+              right: 20,
             }}>
             <Text
               style={{
@@ -386,51 +434,31 @@ const CalendarControl = ({logout}) => {
   };
   return (
     <View style={{backgroundColor: '#fff', height: '100%'}}>
-      <Calendar
-        style={{marginTop: -10}}
-        theme={{
-          todayTextColor: '#fff',
-          todayBackgroundColor: getColor.primary,
-          arrowColor: 'black',
-          textMonthFontWeight: 'bold',
-          'stylesheet.calendar.header': {
-            week: {
-              marginTop: 0,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            },
-          },
-        }}
-        markedDates={{
-          [selectedDate]: {
-            selected: true,
-            marked: true,
-            selectedColor: getColor.secondary,
-            dotColor: getColor.secondary,
-          },
-          ...markedDates,
-        }}
-        current={selectedDate}
-        onMonthChange={e => setSelectedDate(e.dateString)}
-        onDayPress={e => {
-          setSelectedDate(e.dateString);
-        }}
-        monthFormat={'MMMM, yyyy'}
-        disableAllTouchEventsForDisabledDays={true}
-      />
-      <View
+      <Text
         style={{
-          borderBottomColor: '#ddd',
-          borderBottomWidth: 1,
-          marginBottom: 10,
-        }}
-      />
+          color: 'black',
+          fontSize: 12,
+          marginTop: 5,
+          marginHorizontal: 10,
+        }}>
+        Select Course
+      </Text>
+      <View style={{...TextInputStyle, padding: 0, height: 44}}>
+        <Picker
+          mode="dropdown"
+          style={{marginTop: -5}}
+          selectedValue={selectCourse}
+          onValueChange={value => setSelectCourse(value)}>
+          <Picker.Item label="-" value={null || ''} />
+          {renderCourse()}
+        </Picker>
+      </View>
       <TouchableHighlight
         underlayColor={getColor.primaryUnderlay}
         onPress={() => {
           setOpenFormDialog(true);
         }}
-        style={PrimaryActiveButtonStyle}>
+        style={{...PrimaryActiveButtonStyle, marginTop: 10}}>
         <View>
           <Text
             style={{
@@ -439,7 +467,7 @@ const CalendarControl = ({logout}) => {
               fontWeight: '600',
               fontSize: 14,
             }}>
-            Add Event
+            Add New Student
           </Text>
         </View>
       </TouchableHighlight>
@@ -448,5 +476,7 @@ const CalendarControl = ({logout}) => {
     </View>
   );
 };
-
-export default connect(null, {logout})(CalendarControl);
+const mapStateToProps = state => {
+  return {course: state.course};
+};
+export default connect(mapStateToProps, {logout})(StudentCreation);

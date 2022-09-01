@@ -1,6 +1,6 @@
 import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import React, {useEffect, useState} from 'react';
-import api from '../../api/api';
+import api from '../api/api';
 
 const HomeAssignment = () => {
   const [data, setData] = useState([]);
