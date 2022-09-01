@@ -1,5 +1,11 @@
-import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  ToastAndroid,
+} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout} from '../actions';
 import {connect} from 'react-redux';
@@ -8,9 +14,14 @@ import TextInputStyle from '../components/TextInputStyle';
 import {Picker} from '@react-native-picker/picker';
 
 const UserList = ({logout, course}) => {
+  const [refreshing, setRefreshing] = useState(false);
   const [selectCourse, setSelectCourse] = useState(null);
   const [data, setData] = useState([]);
-
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    fetchData();
+    setRefreshing(false);
+  }, [refreshing]);
   useEffect(() => {
     if (selectCourse) fetchData();
     else setData([]);
@@ -128,7 +139,11 @@ const UserList = ({logout, course}) => {
         </Picker>
       </View>
 
-      <ScrollView style={{marginTop: 10}}>
+      <ScrollView
+        style={{marginTop: 10}}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         {data.length ? (
           <Text
             style={{textAlign: 'center', fontWeight: '600', marginBottom: 5}}>

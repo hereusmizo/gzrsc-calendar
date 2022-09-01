@@ -106,6 +106,7 @@ const StudentCreation = ({logout, course}) => {
             },
           );
         }
+
         fetchData();
         setOpenFormDialog(false);
         setFormValues({
