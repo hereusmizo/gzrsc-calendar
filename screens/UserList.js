@@ -3,7 +3,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ToastAndroid,
   RefreshControl,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
