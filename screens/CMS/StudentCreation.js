@@ -124,7 +124,7 @@ const StudentCreation = ({logout, course}) => {
       } catch (error) {
         if (error.response) {
           return ToastAndroid.showWithGravity(
-            'Email Address already exists! Try another email.',
+            'Roll No. already exists! Try another email.',
             ToastAndroid.LONG,
             ToastAndroid.TOP,
           );
