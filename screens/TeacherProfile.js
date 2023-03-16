@@ -24,7 +24,7 @@ const TeacherProfile = ({profile, logout}) => {
               flexDirection: 'row',
             }}>
             <View style={{flex: 1}}>
-              <Text>Teacher Name:</Text>
+              <Text>Name:</Text>
             </View>
             <View style={{flex: 1}}>
               <Text style={{textAlign: 'right', fontWeight: '500'}}>

@@ -28,7 +28,7 @@ const Home = ({logout, navigation}) => {
     },
     {
       id: 6,
-      name: 'Teacher Creation',
+      name: 'SU Creation',
       route: 'TeacherCreation',
     },
     {

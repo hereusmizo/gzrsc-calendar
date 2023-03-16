@@ -169,7 +169,7 @@ const TeacherCreation = ({logout}) => {
         return (
           <TouchableOpacity
             onLongPress={() => {
-              Alert.alert('Teacher', item.name, [
+              Alert.alert('SU', item.name, [
                 {
                   text: 'Delete',
                   onPress: () => {
@@ -245,7 +245,7 @@ const TeacherCreation = ({logout}) => {
                   fontWeight: '700',
                   marginLeft: 10,
                 }}>
-                Teacher Creation
+                Member Creation
               </Text>
             </View>
             <View
@@ -291,10 +291,10 @@ const TeacherCreation = ({logout}) => {
                 marginTop: 5,
                 marginHorizontal: 10,
               }}>
-              Name of Teacher *
+              Name of Member *
             </Text>
             <TextInput
-              placeholder="Name of Teacher"
+              placeholder="Name of Member"
               style={{...TextInputStyle, textAlignVertical: 'top'}}
               value={formValues.name}
               onChangeText={value => {
@@ -406,7 +406,7 @@ const TeacherCreation = ({logout}) => {
               fontWeight: '600',
               fontSize: 14,
             }}>
-            Add New Teacher
+            Add New Member
           </Text>
         </View>
       </TouchableHighlight>
