@@ -89,7 +89,7 @@ const CMSStack = () => {
       <Stack.Screen
         options={() => {
           return {
-            headerTitle: 'Teacher Creation',
+            headerTitle: "Students' Union",
             headerTitleAlign: 'center',
             headerTitleStyle: {fontSize: 16},
             headerStyle: {
