@@ -40,7 +40,7 @@ const Login = ({checkAuth}) => {
             rollno: formValues.username,
           });
           await AsyncStorage.setItem('student-auth', response.data.token);
-        } else if (selectUser === 'Teacher') {
+        } else if (selectUser === 'SU') {
           const response = await api.post(`/api/malsawma/login/teacher`, {
             ...formValues,
             email: formValues.username,
@@ -109,7 +109,7 @@ const Login = ({checkAuth}) => {
             fontWeight: 'bold',
             fontSize: 18,
           }}>
-          GZRSC Calendar
+          GZRSC Students' App
         </Text>
         <View
           style={{
@@ -146,7 +146,7 @@ const Login = ({checkAuth}) => {
               selectedValue={selectUser}
               onValueChange={value => setSelectUser(value)}>
               <Picker.Item label="Student" value={'Student'} />
-              <Picker.Item label="Teacher" value={'Teacher'} />
+              <Picker.Item label="Students' Union" value={'SU'} />
               <Picker.Item label="Admin" value={'Admin'} />
             </Picker>
           </View>
@@ -159,7 +159,7 @@ const Login = ({checkAuth}) => {
             }}>
             {selectUser === 'Admin'
               ? 'Username'
-              : selectUser === 'Teacher'
+              : selectUser === 'SU'
               ? 'Email ID'
               : 'Roll Number'}
           </Text>
@@ -168,7 +168,7 @@ const Login = ({checkAuth}) => {
             placeholder={
               selectUser === 'Admin'
                 ? 'Username'
-                : selectUser === 'Teacher'
+                : selectUser === 'SU'
                 ? 'Email ID'
                 : 'Roll Number'
             }

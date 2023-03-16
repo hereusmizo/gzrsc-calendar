@@ -78,7 +78,7 @@ const Routes = props => {
           />
           <Tab.Screen
             options={{
-              headerTitle: 'Home Assignment',
+              headerTitle: 'Notice',
               headerShown: true,
               headerTitleAlign: 'center',
               headerTitleStyle: {fontSize: 16},
@@ -95,7 +95,7 @@ const Routes = props => {
                   />
                 );
               },
-              tabBarLabel: 'Home Assignment',
+              tabBarLabel: 'Notice',
             }}
             name="HomeAssignment"
             component={HomeAssignment}
@@ -187,7 +187,7 @@ const Routes = props => {
           />
           <Tab.Screen
             options={{
-              headerTitle: 'Home Assignment',
+              headerTitle: 'Notice',
               headerShown: true,
               headerTitleAlign: 'center',
               headerTitleStyle: {fontSize: 16},
@@ -204,7 +204,7 @@ const Routes = props => {
                   />
                 );
               },
-              tabBarLabel: 'Home Assignment',
+              tabBarLabel: 'Notice',
             }}
             name="HomeAssignment"
             component={HomeAssignment}
@@ -281,7 +281,7 @@ const Routes = props => {
           />
           <Tab.Screen
             options={{
-              headerTitle: 'Home Assignment',
+              headerTitle: 'Notice',
               headerShown: true,
               headerTitleAlign: 'center',
               headerTitleStyle: {fontSize: 16},
@@ -298,7 +298,7 @@ const Routes = props => {
                   />
                 );
               },
-              tabBarLabel: 'Home Assignment',
+              tabBarLabel: 'Notice',
             }}
             name="HomeAssignment"
             component={AssignmentControl}
