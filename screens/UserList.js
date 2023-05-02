@@ -4,6 +4,7 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,6 +13,9 @@ import {connect} from 'react-redux';
 import api from '../api/api';
 import TextInputStyle from '../components/TextInputStyle';
 import {Picker} from '@react-native-picker/picker';
+import Barcode from 'react-native-barcode-builder';
+import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import getColor from '../components/getColor';
 
 const UserList = ({logout, course}) => {
   const [selectCourse, setSelectCourse] = useState(null);
@@ -52,30 +56,7 @@ const UserList = ({logout, course}) => {
     if (data.length) {
       return data.map((item, index) => {
         return (
-          <TouchableOpacity
-            disabled
-            // onLongPress={() => {
-            //   Alert.alert(item.rollno, item.name, [
-            //     {
-            //       text: 'Delete',
-            //       onPress: () => {
-            //         onDelete(item.id);
-            //       },
-            //     },
-            //     {
-            //       text: 'Edit',
-            //       onPress: () => {
-            //         setId(item.id);
-            //         setFormValues(item);
-            //         setOpenFormDialog(true);
-            //       },
-            //     },
-            //     {
-            //       text: 'Close',
-            //       style: 'cancel',
-            //     },
-            //   ]);
-            // }}
+          <View
             key={item.id}
             style={{
               flex: 1,
@@ -87,10 +68,52 @@ const UserList = ({logout, course}) => {
               borderWidth: 0.5,
               elevation: 2,
               borderRadius: 8,
+              display: 'flex',
+              flexDirection: 'row',
             }}>
-            <Text style={{fontWeight: '500'}}>Roll No. {item.rollno}</Text>
-            <Text style={{marginTop: 5}}>Name: {item.name}</Text>
-          </TouchableOpacity>
+            <View
+              style={{display: 'flex', flexDirection: 'column', flexGrow: 1}}>
+              <Text style={{fontWeight: '500'}}>Roll No. {item.rollno}</Text>
+              <Text style={{marginTop: 5}}>Name: {item.name}</Text>
+              <Text style={{marginTop: 5, marginBottom: 10}}>
+                Contact: {item.contact}
+              </Text>
+
+              {item.library_id && (
+                <Barcode
+                  height={60}
+                  value={item.library_id}
+                  format="CODE128"
+                  width={5}
+                  text={`Library ID: ${item.library_id}`}
+                />
+              )}
+            </View>
+            <View
+              style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+              }}>
+              <TouchableOpacity
+                disabled={item.contact ? false : true}
+                onPress={() => Linking.openURL(`tel:+91${item.contact}`)}
+                style={{
+                  backgroundColor: getColor.primary,
+                  width: 50,
+                  height: 50,
+                  borderRadius: 25,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  elevation: 12,
+                  borderColor: 'white',
+                  borderWidth: 2,
+                }}>
+                <MaterialIcon name="phone" size={30} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
         );
       });
     } else {

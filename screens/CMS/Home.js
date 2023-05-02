@@ -13,7 +13,7 @@ const Home = ({logout, navigation}) => {
     },
     {
       id: 2,
-      name: 'Home Assignment Control',
+      name: 'Notice Control',
       route: 'AssignmentControl',
     },
     {

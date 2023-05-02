@@ -20,6 +20,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import PrimaryActiveButtonStyle from '../../components/PrimaryActiveButtonStyle';
 import TextInputStyle from '../../components/TextInputStyle';
 import {Picker} from '@react-native-picker/picker';
+import Barcode from 'react-native-barcode-builder';
 
 const StudentCreation = ({logout, course}) => {
   const [id, setId] = useState(null);
@@ -32,6 +33,8 @@ const StudentCreation = ({logout, course}) => {
     course: '',
     password: '',
     confirm: '',
+    contact: '',
+    library_id: '',
   });
   useEffect(() => {
     if (selectCourse) fetchData();
@@ -64,6 +67,7 @@ const StudentCreation = ({logout, course}) => {
       !formValues.name ||
       !formValues.rollno ||
       !formValues.course ||
+      !formValues.contact ||
       !formValues.password ||
       !formValues.confirm
     ) {
@@ -115,6 +119,8 @@ const StudentCreation = ({logout, course}) => {
           course: '',
           password: '',
           confirm: '',
+          contact: '',
+          library_id: '',
         });
         return ToastAndroid.showWithGravity(
           'Submitted Successfully',
@@ -184,7 +190,7 @@ const StudentCreation = ({logout, course}) => {
         return (
           <TouchableOpacity
             onLongPress={() => {
-              Alert.alert(item.rollno, item.name, [
+              Alert.alert(item.rollno, `${item.name} (${item.contact})`, [
                 {
                   text: 'Delete',
                   onPress: () => {
@@ -218,9 +224,23 @@ const StudentCreation = ({logout, course}) => {
               borderRadius: 8,
             }}>
             <Text style={{fontWeight: '500'}}>
-              {index + 1}) {item.rollno}
+              {index + 1}
+              {')'} {item.rollno}
             </Text>
             <Text style={{marginTop: 5}}>{item.name}</Text>
+            <Text style={{marginTop: 5, marginBottom: 10}}>
+              Contact: {item.contact}
+            </Text>
+
+            {item.library_id && (
+              <Barcode
+                height={60}
+                value={item.library_id}
+                format="CODE128"
+                width={5}
+                text={`Library ID: ${item.library_id}`}
+              />
+            )}
           </TouchableOpacity>
         );
       });
@@ -248,6 +268,8 @@ const StudentCreation = ({logout, course}) => {
               course: '',
               password: '',
               confirm: '',
+              contact: '',
+              library_id: '',
             });
           }}>
           <View
@@ -287,6 +309,8 @@ const StudentCreation = ({logout, course}) => {
                     course: '',
                     password: '',
                     confirm: '',
+                    contact: '',
+                    library_id: '',
                   });
                 }}>
                 <AntDesign name="closecircleo" size={25} />
@@ -368,6 +392,47 @@ const StudentCreation = ({logout, course}) => {
                 {renderCourse()}
               </Picker>
             </View>
+            <Text
+              style={{
+                color: 'black',
+                fontSize: 12,
+                marginTop: 5,
+                marginHorizontal: 10,
+              }}>
+              Contact *
+            </Text>
+            <TextInput
+              placeholder="Contact"
+              keyboardType="number-pad"
+              style={{...TextInputStyle, textAlignVertical: 'top'}}
+              value={formValues.contact}
+              onChangeText={value => {
+                setFormValues({
+                  ...formValues,
+                  contact: value,
+                });
+              }}
+            />
+            <Text
+              style={{
+                color: 'black',
+                fontSize: 12,
+                marginTop: 5,
+                marginHorizontal: 10,
+              }}>
+              Library ID
+            </Text>
+            <TextInput
+              placeholder="Library ID"
+              style={{...TextInputStyle, textAlignVertical: 'top'}}
+              value={formValues.library_id}
+              onChangeText={value => {
+                setFormValues({
+                  ...formValues,
+                  library_id: value,
+                });
+              }}
+            />
             <Text
               style={{
                 color: 'black',

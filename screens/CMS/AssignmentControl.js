@@ -58,7 +58,7 @@ const AssignmentControl = ({logout}) => {
   const onSubmit = async () => {
     if (!formValues.title) {
       return ToastAndroid.showWithGravity(
-        'Cannot submit empty title assignment',
+        'Cannot submit empty title notice',
         ToastAndroid.LONG,
         ToastAndroid.TOP,
       );
@@ -242,7 +242,7 @@ const AssignmentControl = ({logout}) => {
                   fontWeight: '700',
                   marginLeft: 10,
                 }}>
-                New Home Assignment
+                {id ? 'Edit' : 'New'} Notice
               </Text>
             </View>
             <View
@@ -286,10 +286,10 @@ const AssignmentControl = ({logout}) => {
                 marginTop: 5,
                 marginHorizontal: 10,
               }}>
-              Title of Assignment *
+              Title of Notice *
             </Text>
             <TextInput
-              placeholder="Title of Assignment"
+              placeholder="Title of Notice"
               style={{...TextInputStyle, textAlignVertical: 'top'}}
               value={formValues.title}
               onChangeText={value => {
@@ -306,12 +306,12 @@ const AssignmentControl = ({logout}) => {
                 marginTop: 5,
                 marginHorizontal: 10,
               }}>
-              Description of Assignment
+              Description of Notice
             </Text>
             <TextInput
               multiline
               numberOfLines={10}
-              placeholder="Description of Assignment..."
+              placeholder="Description of Notice..."
               style={{...TextInputStyle, textAlignVertical: 'top'}}
               value={formValues.body}
               onChangeText={value => {
@@ -359,7 +359,7 @@ const AssignmentControl = ({logout}) => {
               fontWeight: '600',
               fontSize: 14,
             }}>
-            Add Assignment
+            Add Notice
           </Text>
         </View>
       </TouchableHighlight>

@@ -44,7 +44,7 @@ const CMSStack = () => {
       <Stack.Screen
         options={() => {
           return {
-            headerTitle: 'Home Assignment Control',
+            headerTitle: 'Notice Control',
             headerTitleAlign: 'center',
             headerTitleStyle: {fontSize: 16},
             headerStyle: {
