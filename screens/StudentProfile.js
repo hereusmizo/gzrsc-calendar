@@ -10,6 +10,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {logout} from '../actions';
 import getColor from '../components/getColor';
+import Barcode from 'react-native-barcode-builder';
 
 const StudentProfile = ({profile, course, logout}) => {
   if (Object.keys(profile).length) {
@@ -59,6 +60,22 @@ const StudentProfile = ({profile, course, logout}) => {
               flexDirection: 'row',
             }}>
             <View style={{flex: 1}}>
+              <Text>Phone Number:</Text>
+            </View>
+            <View style={{flex: 1}}>
+              <Text style={{textAlign: 'right', fontWeight: '500'}}>
+                {profile.contact}
+              </Text>
+            </View>
+          </View>
+          <View
+            style={{
+              display: 'flex',
+              marginHorizontal: 20,
+              marginVertical: 5,
+              flexDirection: 'row',
+            }}>
+            <View style={{flex: 1}}>
               <Text>Course:</Text>
             </View>
             <View style={{flex: 1}}>
@@ -66,6 +83,23 @@ const StudentProfile = ({profile, course, logout}) => {
                 {foundCourse ? foundCourse.name : ''}
               </Text>
             </View>
+          </View>
+          <View
+            style={{
+              paddingHorizontal: 20,
+              display: 'flex',
+              alignItems: 'center',
+              marginTop: 20,
+            }}>
+            {profile.library_id && (
+              <Barcode
+                height={60}
+                value={profile.library_id}
+                format="CODE128"
+                width={3.4}
+                text={`Library ID: ${profile.library_id}`}
+              />
+            )}
           </View>
         </>
       );
